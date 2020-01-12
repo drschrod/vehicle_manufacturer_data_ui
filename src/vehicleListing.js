@@ -4,9 +4,12 @@ import React from 'react';
 export default class VehicleListing extends React.Component {       
     generateListing(vehicles) {
         const listing = [];
-        console.log(vehicles)
+        let count = 0;
         vehicles.forEach(v => {
-            listing.push(<Vehicle vehicle={v}></Vehicle>)
+            if (count < 5) {
+                listing.push(<Vehicle vehicle={v}></Vehicle>);
+                count+=1;
+            }
         });
         return listing;
     };

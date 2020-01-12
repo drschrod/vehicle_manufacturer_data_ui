@@ -1,11 +1,6 @@
 import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
-import Table from '@material-ui/core/Table';
-import TableBody from '@material-ui/core/TableBody';
-import TableCell from '@material-ui/core/TableCell';
-import TableContainer from '@material-ui/core/TableContainer';
-import TableHead from '@material-ui/core/TableHead';
-import TableRow from '@material-ui/core/TableRow';
+
 import Paper from '@material-ui/core/Paper';
 import CheckCircleIcon from '@material-ui/icons/CheckCircle';
 import ErrorIcon from '@material-ui/icons/Error';
@@ -14,7 +9,7 @@ import Container from '@material-ui/core/Container';
 import Grid from '@material-ui/core/Grid';
 import Link from '@material-ui/core/Link';
 import DoneAllIcon from '@material-ui/icons/DoneAll';
-
+import VehicleSpecsPanel from './vehicleSpecsPanel';
 
 
 const classes = makeStyles(theme => ({
@@ -27,7 +22,6 @@ const classes = makeStyles(theme => ({
     paper: {
         padding: theme.spacing(2),
         textAlign: 'center',
-        color: theme.palette.text.secondary,
     },
 }));
 
@@ -45,107 +39,44 @@ function titleCase(string) {
 
 export default class Vehicle extends React.Component {
 
-    displayValue(value) {
-        return value
-        // if (value === "not available") {
-        //     return (
-        //         <ErrorIcon alt="Not Available"></ErrorIcon>
-        //     )
-        // } else if (value === "standard") {
-        //     return (
-        //         <CheckCircleIcon alt="Standard"></CheckCircleIcon>
-        //     )
-        // } else if (value === "available"){
-        //     return (
-        //         <DoneAllIcon>{value}</DoneAllIcon>
-        //     )
-        // } else {
-        //     return value
-        // }
+    renderVehicleSpecsByTrim(Features, FeaturesList, series) {
+        let vehicleSpecsByTrim = [];
+        FeaturesList.forEach(feature => {
+            vehicleSpecsByTrim.push(<VehicleSpecsPanel Features={Features} series={series} feature={feature}></VehicleSpecsPanel>);
+        });
+        return vehicleSpecsByTrim;
     };
 
-    renderFeatureSpecs(Features, featuresList, series) {
-        let specsToRender = []
-        for (const f in Features) {
-            if (Features.hasOwnProperty(f)) {
-                const { title, value, subtitle } = Features[f][series];
-                let description = title;
-                if (f === "Multimedia") {
-                    description = title.split(",")
-                    description.forEach(d => {
-                        specsToRender.push(
-                            <TableRow>
-                                <TableCell>{f}</TableCell>
-                                <TableCell align="left">{d}</TableCell>
-                                <TableCell align="left">{subtitle}</TableCell>
-                                <TableCell align="left">{this.displayValue(value)}</TableCell>
-                            </TableRow>
-                        );
-                    });
-                } else {
-                    specsToRender.push(
-                        <TableRow>
-                            <TableCell>{f}</TableCell>
-                            <TableCell align="left">{description}</TableCell>
-                            <TableCell align="left">{subtitle}</TableCell>
-                            <TableCell align="left">{this.displayValue(value)}</TableCell>
-                        </TableRow>
-                    );
-                }
-
-            }
-        }
-        return specsToRender
-    }
-
-
-
-    renderFeatureTable(Features, featuresList, series) {
-        return (
-            <TableContainer component={Paper}>
-                <Table stripedRows className={classes.table} aria-label="simple table">
-                    <TableHead>
-                        <TableRow>
-                            <TableCell fontWeight="fontWeightBold">Feature</TableCell>
-                            <TableCell fontWeight="fontWeightBold" align="left">Description</TableCell>
-                            <TableCell fontWeight="fontWeightBold" align="left">Alt</TableCell>
-                            <TableCell fontWeight="fontWeightBold" align="left">Value</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {this.renderFeatureSpecs(Features, featuresList, series)}
-                    </TableBody>
-                </Table>
-            </TableContainer>
-        )
+    renderTopHalf(vehicle, series, trim){
+        const { Features, Make, Model, URL, Year, FeaturesList, TrimAndSeries } = vehicle;
+        return(
+            
+                <Paper className={classes.paper} >
+                    <Typography variant='h2'>
+                        <Link href={URL}>{Year} {titleCase(Make)} {titleCase(Model)}</Link>
+                    </Typography>
+                    <Typography variant='subtitle1'>{series} Series: {trim}</Typography>
+                    <img src={process.env.PUBLIC_URL + `/Images/${Model}.png`} alt={Model}></img>
+                    {this.renderVehicleSpecsByTrim(Features, FeaturesList, series)}
+                </Paper>
+            
+        );
     };
 
-    renderBySeries(vehicle, Series) {
-        const { Features, Make, Model, URL, Year, category, featuresList, image, trimAndSeries } = vehicle;
+    renderVehicle(vehicle) {
+        const { TrimAndSeries } = vehicle;
         let vehiclesToRender = []
-        for (const series in trimAndSeries) {
-            if (trimAndSeries.hasOwnProperty(series)) {
-                const trim = trimAndSeries[series];
+        for (const series in TrimAndSeries) {
+            if (TrimAndSeries.hasOwnProperty(series)) {
+                const trim = TrimAndSeries[series];
                 vehiclesToRender.push(
                     <div className="vehicle">
                         <Grid container spacing={3}>
                             <Grid item xs={12}>
-                                <Paper className={classes.paper}>
-                                    <Typography>
-                                        <Link href={URL}>
-                                            <h1>{Year} {titleCase(Make)} {titleCase(Model)}</h1>
-                                        </Link>
-                                    </Typography>
-                                    <h1></h1>
-                                    <img src={process.env.PUBLIC_URL + `/Images/${Model}.png`} alt={Model}></img>
-                                    <h3>{series} Series: {trim}</h3>
-                                </Paper>
-                            </Grid>
-                            <Grid item xs={12}>
-                                {this.renderFeatureTable(Features, featuresList, series)}
+                                {this.renderTopHalf(vehicle, series, trim)};
+                                
                             </Grid>
                         </Grid>
-                        <br></br><hr></hr><br></br>
                     </div>
                 )
             }
@@ -156,14 +87,9 @@ export default class Vehicle extends React.Component {
 
 
     render() {
-        const { Series } = this.props.vehicle;
         return (
-            <Container >
-                <Paper style={{ backgroundColor: '#8e98a4' }}>
-                    <Typography component="div">
-                        {this.renderBySeries(this.props.vehicle, Series)}
-                    </Typography>
-                </Paper>
+            <Container style={{ backgroundColor: '#8e98a4' }}>
+                {this.renderVehicle(this.props.vehicle)}
             </Container>
         );
     }
